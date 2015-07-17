@@ -60,15 +60,15 @@ for frm in camera.capture_continuous(rawCapture, format="bgr", use_video_port=Tr
 		
 		cv2.imshow('frame',img)
 
-		# clear the stream in preparation for the next frame
-		rawCapture.truncate(0)
-
-		k = cv2.waitKey(30) & 0xff
-		if k == 27:
-			break
-
 		# Now update the previous frame and previous points
 		old_gray = frame_gray.copy()
 		p0 = good_new.reshape(-1,1,2)
+
+	# clear the stream in preparation for the next frame
+	rawCapture.truncate(0)
+
+	k = cv2.waitKey(30) & 0xff
+	if k == 27:
+		break
 
 cv2.destroyAllWindows()
