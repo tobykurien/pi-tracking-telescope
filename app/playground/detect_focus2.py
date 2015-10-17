@@ -1,6 +1,7 @@
 # adapted from http://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
 import cv2
 import sys
+import time
 
 sys.path.append("../modules")
 from camera import Camera
@@ -13,7 +14,7 @@ def variance_of_laplacian(image):
 	
 if __name__ == "__main__":
 	cam = Camera(cameraNum=1)
-	
+	cv2.namedWindow("Image", flags=cv2.CV_WINDOW_AUTOSIZE)
 	while True:
 		image = cam.grabFrame()
 		# detect focus
@@ -27,4 +28,6 @@ if __name__ == "__main__":
 		cv2.putText(image, "{}: {:.2f}".format(text, fm), (10, 30),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
 		cv2.imshow("Image", image)	
-		cv2.waitKey(0)
+		
+		# call waitKey otherwise image won't show. Max 60fps
+		cv2.waitKey(16)
