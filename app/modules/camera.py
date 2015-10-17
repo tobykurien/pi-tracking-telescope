@@ -65,10 +65,11 @@ class Camera:
             for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
                 try:
                     yield frame.array
+                    self.rawCapture.truncate(0)
                 except:
                     break
                 finally:
-                    self.rawCapture.truncate(0)
+                    self.cleanup()
         else:
             while True:
                 try:
@@ -76,4 +77,10 @@ class Camera:
                 except:
                     break
                 finally:
-                    self.rawCapture.release()
+                    self.cleanup()
+                    
+    def cleanup(self):
+        if self.rpiCam:
+            self.camera.close()
+        else:
+            self.rawCapture.release()

@@ -30,4 +30,8 @@ if __name__ == "__main__":
 		cv2.imshow("Image", image)	
 		
 		# call waitKey otherwise image won't show. Max 60fps
-		cv2.waitKey(16)
+		key = cv2.waitKey(16) & 0xFF
+		if key != 255: break;
+	
+	cam.cleanup()	
+	cv2.destroyAllWindows()
