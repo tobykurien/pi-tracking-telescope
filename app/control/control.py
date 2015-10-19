@@ -10,7 +10,6 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import cv2
 import numpy as np
-import video
 from common import anorm2, draw_str
 from time import clock
 
