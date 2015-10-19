@@ -1,7 +1,6 @@
 # adapted from http://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
 import cv2
 import sys
-import time
 
 sys.path.append("../modules")
 from camera import Camera
