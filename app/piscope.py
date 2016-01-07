@@ -1,8 +1,8 @@
 import cv2
 import yaml
 import codecs
-
 from modules.camera import Camera
+from modules.focus import ProcessFocus
 
 def read_config(filepath):
 	# read configuration file
@@ -14,27 +14,27 @@ def read_config(filepath):
 
 	return config
 
-def variance_of_laplacian(image):
-	# compute the Laplacian of the image and then return the focus
-	# measure, which is simply the variance of the Laplacian
-	return cv2.Laplacian(image, cv2.CV_64F).var()
-	
 if __name__ == "__main__":
 	config = read_config('config.yml')
+
+	focus = ProcessFocus()
+	focus.start()
 	
 	cam = Camera(rpiCam=config['rpi_camera'], cameraNum=config['camera_number'])
 	cv2.namedWindow("Image", flags=cv2.CV_WINDOW_AUTOSIZE)
 	while True:
-		image = cam.grabFrame()
+		image = cam.grabFrame()		
+
 		# detect focus
-		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-		fm = variance_of_laplacian(gray)
+		if focus.queue.qsize() == 0:
+			focus.queue.put(image)
+			
 		text = "Not Blurry"
-		if fm < 100:
+		if focus.focus < 100:
 			text = "Blurry"
 		
 		# show the image
-		cv2.putText(image, "{}: {:.2f}".format(text, fm), (10, 30),
+		cv2.putText(image, "{}: {:.2f}".format(text, focus.focus), (10, 30),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
 		cv2.imshow("Image", image)	
 		
