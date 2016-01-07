@@ -7,7 +7,7 @@ class Camera:
     USB camera. Useful for testing and debugging
     '''
     
-    def __init__(self, rpiCam=False, cameraNum=0, width=640, height=480, fps=32):
+    def __init__(self, rpiCam=False, cameraNum=0, width=640, height=480, fps=30):
         self.rpiCam = rpiCam
         self.width = width
         self.height = height
@@ -49,9 +49,10 @@ class Camera:
         if self.rpiCam:
             self.camera.capture(self.rawCapture, format="bgr")
             image = self.rawCapture.array
+            self.rawCapture.truncate(0)
             return image
         else:
-            ret, image = self.rawCapture.read()
+            _, image = self.rawCapture.read()
             return image
         
     def streamFrames(self):
