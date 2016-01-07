@@ -1,3 +1,7 @@
 rpi_camera: False
 camera_number: 1
+camera_width: 800
+camera_height: 480
+camera_fps: 30
+
 
