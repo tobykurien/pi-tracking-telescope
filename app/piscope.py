@@ -3,6 +3,7 @@ import yaml
 import codecs
 from modules.camera import Camera
 from modules.focus import ProcessFocus
+from modules.stacking import ProcessStacking
 
 def read_config(filepath):
 	# read configuration file
@@ -20,27 +21,38 @@ if __name__ == "__main__":
 	focus = ProcessFocus()
 	focus.start()
 	
+	stack = ProcessStacking()
+	stack.start()
+
 	cam = Camera(rpiCam=config['rpi_camera'], cameraNum=config['camera_number'])
 	cv2.namedWindow("Image", flags=cv2.CV_WINDOW_AUTOSIZE)
+	
+	showStack = True
 	while True:
 		image = cam.grabFrame()		
 
 		# detect focus
-		if focus.queue.qsize() == 0:
-			focus.queue.put(image)
-			
-		text = "Not Blurry"
-		if focus.focus < 100:
-			text = "Blurry"
-		
+		focus.addFrame(image)
+
+		# stack images
+		stack.addFrame(image)
+
+		if showStack and stack.outputFrame is not None:
+			image = stack.getFrame()
+					
 		# show the image
-		cv2.putText(image, "{}: {:.2f}".format(text, focus.focus), (10, 30),
+		cv2.putText(image, "Focus: {:.2f} Stacking: {}".format(focus.focus, showStack), (10, 30),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
-		cv2.imshow("Image", image)	
+		cv2.imshow("Image", image)
 		
 		# call waitKey otherwise image won't show. Max 60fps
 		key = cv2.waitKey(16) & 0xFF
-		if key != 255: break;
+		if key == 115: 
+			# press "s" to toggle stacking 
+			showStack = not showStack
+			stack.clear()
+			
+		elif key != 255: break;
 	
 	cam.cleanup()	
 	cv2.destroyAllWindows()

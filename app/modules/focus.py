@@ -15,6 +15,10 @@ class ProcessFocus(Thread):
         # compute the Laplacian of the image and then return the focus
         # measure, which is simply the variance of the Laplacian
         return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def addFrame(self, image):
+        if self.queue.qsize() == 0:
+            self.queue.put(image)
         
     def run(self):
         frame = None
