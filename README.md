@@ -12,13 +12,13 @@ being built at [House4Hack][house4hack].
 
 # Pictures
 
-![PiScope Version 1](piscope.jpg)
+![PiScope Version 1](images/piscope.jpg)
 
-![Making PiScope](making_piscope.png)
+![Making PiScope](images/making_piscope.png)
 
-![Early moon shot](moon1.jpg)
+![Early moon shot](images/moon1.jpg)
 
-![Early saturn shot](saturn.jpg)
+![Early saturn shot](images/saturn.jpg)
 
 # Documentation
 
