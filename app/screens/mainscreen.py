@@ -9,6 +9,7 @@ from widgets.background import LcarsBackgroundImage
 from widgets.gifimage import LcarsGifImage
 from widgets.screen import LcarsScreen
 from widgets.sprite import LcarsMoveToMouse
+from widgets.lcars_widgets import LcarsText
 
 
 class MainScreen(LcarsScreen):
@@ -25,7 +26,10 @@ class MainScreen(LcarsScreen):
         self.stack.start()
         self.showStack = False
         
+        self.focusText = LcarsText((255,0,0), (17,303), "Focus: xxxxxx")
+        
         all_sprites.add(LcarsBackgroundImage("assets/jarvis.png"))
+        all_sprites.add(self.focusText)
         #all_sprites.add(LcarsGifImage("assets/jarvis_gadgets.gif", (83, 258)))
         # all_sprites.add(LcarsMoveToMouse(colours.BEIGE))
         
@@ -43,6 +47,9 @@ class MainScreen(LcarsScreen):
         self.image.set_shifts((b, g, r, a))
         
     def update(self, screenSurface, fpsClock):
+        self.focusText.renderText("Focus: %d" % self.focus.focus)
+        self.focusText.update(screenSurface)
+                           
         if (self.image != None):
             screenSurface.blit(self.image,
                 # placement of preview window
