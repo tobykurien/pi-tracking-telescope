@@ -2,7 +2,7 @@ import yaml
 import codecs
 from modules.camera import Camera
 from screens.mainscreen import MainScreen
-from ui import UI
+from ui.ui import UserInterface
 
 def read_config(filepath):
 	# read configuration file
@@ -16,7 +16,7 @@ def read_config(filepath):
 
 if __name__ == "__main__":
 	screen = MainScreen()
-	ui = UI(screen, (800, 480), True, 60, True)
+	ui = UserInterface(screen, (800, 480), True, 60, True)
 	config = read_config('config.yml')
 
 	cam = Camera(rpiCam=config['rpi_camera'], cameraNum=config['camera_number'],

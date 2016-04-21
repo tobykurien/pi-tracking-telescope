@@ -4,12 +4,12 @@ from pygame.rect import Rect
 
 from modules.focus import ProcessFocus
 from modules.stacking import ProcessStacking
-from widgets import colours
-from widgets.background import LcarsBackgroundImage
-from widgets.gifimage import LcarsGifImage
-from widgets.screen import LcarsScreen
-from widgets.sprite import LcarsMoveToMouse
-from widgets.lcars_widgets import LcarsText
+from ui import colours
+from ui.widgets.background import LcarsBackgroundImage
+from ui.widgets.gifimage import LcarsGifImage
+from ui.widgets.lcars_widgets import LcarsText
+from ui.widgets.screen import LcarsScreen
+from ui.widgets.sprite import LcarsMoveToMouse
 
 
 class MainScreen(LcarsScreen):
