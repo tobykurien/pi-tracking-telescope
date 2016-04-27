@@ -15,14 +15,15 @@ def read_config(filepath):
 	return config
 
 if __name__ == "__main__":
-	screen = MainScreen()
-	ui = UserInterface(screen, (800, 480), True, 60, True)
 	config = read_config('config.yml')
 
 	cam = Camera(rpiCam=config['rpi_camera'], cameraNum=config['camera_number'],
 					width=config['camera_width'], height=config['camera_height'],
 					fps=config['camera_fps'])
-		
+
+	screen = MainScreen(config, cam)
+	ui = UserInterface(screen, (800, 480), True, 60, True)
+
 	while True:
 		image = cam.grabFrame()		
 		if (image != None): screen.setImage(image)

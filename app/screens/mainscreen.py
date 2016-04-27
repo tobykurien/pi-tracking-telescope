@@ -41,10 +41,7 @@ class MainScreen(LcarsScreen):
             image = self.stack.getFrame()
 
         if (image == None): return
-        self.image = pygame.image.frombuffer(image, (len(image[0]), len(image)), 'RGB')
-        # change from BGR to RGB
-        r, g, b, a = self.image.get_shifts()
-        self.image.set_shifts((b, g, r, a))
+        self.image = image
         
     def update(self, screenSurface, fpsClock):
         self.focusText.renderText("Focus: %d" % self.focus.focus)

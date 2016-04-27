@@ -1,5 +1,8 @@
 import cv2
 import time
+import io
+import yuv2rgb
+import pygame
 
 class Camera:
     '''
@@ -28,8 +31,11 @@ class Camera:
         camera = PiCamera()
         camera.resolution = (self.width, self.height)
         camera.framerate = self.fps
+	camera.crop = (0.0, 0.0, 1.0, 1.0)
         self.camera = camera
         self.rawCapture = PiRGBArray(camera, size=(self.width, self.height))
+        self.rgb = bytearray(self.width * self.height * 3)
+        self.yuv = bytearray(self.width * self.height * 3 / 2)
         
         # wait for camera to warm up
         time.sleep(0.1)
@@ -47,10 +53,15 @@ class Camera:
         '''
         
         if self.rpiCam:
-            self.camera.capture(self.rawCapture, format="bgr")
-            image = self.rawCapture.array
-            self.rawCapture.truncate(0)
-            return image
+            stream = io.BytesIO()
+            self.camera.capture(stream, use_video_port=True, format='raw')
+	    stream.seek(0)
+	    stream.readinto(self.yuv)
+            stream.close()
+            yuv2rgb.convert(self.yuv, self.rgb, self.width, self.height)
+            #image = self.rawCapture.array
+            #self.rawCapture.truncate(0)
+            return pygame.image.frombuffer(self.rgb[0:(self.width*self.height*3)], (self.width, self.height), 'RGB')
         else:
             _, image = self.rawCapture.read()
             return image
@@ -85,3 +96,7 @@ class Camera:
             self.camera.close()
         else:
             self.rawCapture.release()
+    
+    def startPreview(self):
+	if self.rpiCam:
+	   self.camera.start_preview()
