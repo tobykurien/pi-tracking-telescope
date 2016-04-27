@@ -73,7 +73,8 @@ class MainScreen(LcarsScreen):
               self.preview = True
 
         if (event.type == KEYUP and event.key == K_s):
-	   self.showStack = not self.showStack
+            self.showStack = not self.showStack
+            self.stack.clear()
 
         return LcarsScreen.handleEvents(self, event, fpsClock)
     
