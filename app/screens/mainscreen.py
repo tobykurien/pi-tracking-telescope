@@ -5,6 +5,8 @@ from pygame.locals import *
 
 from modules.focus import ProcessFocus
 from modules.stacking import ProcessStacking
+from modules.tracking import ProcessTracking
+
 from ui import colours
 from ui.widgets.background import LcarsBackgroundImage
 from ui.widgets.gifimage import LcarsGifImage
@@ -41,11 +43,12 @@ class MainScreen(LcarsScreen):
 
         
         self.focusText = LcarsText((255,0,0), (17,303), "Focus: ")
-        self.trackingText = LcarsText((255,0,0), (40,303), "Track: ")
+        self.trackingText = LcarsText((255,0,0), (17,380), "Track: ")
 
         
         all_sprites.add(LcarsBackgroundImage("assets/jarvis.png"))
         all_sprites.add(self.focusText)
+        all_sprites.add(self.trackingText)
         #all_sprites.add(LcarsGifImage("assets/jarvis_gadgets.gif", (83, 258)))
         # all_sprites.add(LcarsMoveToMouse(colours.BEIGE))
         
@@ -65,7 +68,8 @@ class MainScreen(LcarsScreen):
         if pygame.time.get_ticks() - self.timer > 100:
             self.focusText.setText("Focus: %d" % self.focus.focus)
             self.timer = pygame.time.get_ticks()
-            self.trackingText.setText("Track: %s" % self.tracker.status)
+            self.trackingText.setText("Track: %s" % self.tracker.getStatus())
+            
 
             
         if (self.image != None):
@@ -96,5 +100,6 @@ class MainScreen(LcarsScreen):
     
     def timeStamped(self, fname, fmt='%Y-%m-%d-%H-%M-%S_{fname}'):
         return datetime.now().strftime(fmt).format(fname=fname)
+
 
     
