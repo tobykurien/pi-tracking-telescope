@@ -4,7 +4,9 @@ sudo apt-get update
 #sudo rpi-update
 
 # install needed python libraries
-sudo apt-get -y install libopencv-dev python-opencv python-yaml python-picamera
+sudo apt-get -y install libopencv-dev python-opencv python-yaml python-picamera python-pygame
+
+
 
 # enable opengl on rpi
 sudo apt-get -y install libgl1-mesa-dri

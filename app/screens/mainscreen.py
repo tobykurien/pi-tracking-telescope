@@ -33,8 +33,16 @@ class MainScreen(LcarsScreen):
         self.stack = ProcessStacking()
         self.stack.start()
         self.showStack = False
+
+        # tracking images
+        self.tracker = ProcessTracking()
+        self.tracker.start()
+        self.tracking = False
+
         
         self.focusText = LcarsText((255,0,0), (17,303), "Focus: ")
+        self.trackingText = LcarsText((255,0,0), (40,303), "Track: ")
+
         
         all_sprites.add(LcarsBackgroundImage("assets/jarvis.png"))
         all_sprites.add(self.focusText)
@@ -44,6 +52,8 @@ class MainScreen(LcarsScreen):
     def setImage(self, image):
         # do background processing
         self.focus.addFrame(image)
+        if self.tracking:
+            self.tracker.addFrame(image)
         if self.showStack: self.stack.addFrame(image)
         if self.showStack and self.stack.outputFrame is not None:
             image = self.stack.getFrame()
@@ -55,7 +65,9 @@ class MainScreen(LcarsScreen):
         if pygame.time.get_ticks() - self.timer > 100:
             self.focusText.setText("Focus: %d" % self.focus.focus)
             self.timer = pygame.time.get_ticks()
-                           
+            self.trackingText.setText("Track: %s" % self.tracker.status)
+
+            
         if (self.image != None):
             screenSurface.blit(self.image,
                 # placement of preview window
@@ -75,6 +87,10 @@ class MainScreen(LcarsScreen):
         if (event.type == KEYUP and event.key == K_s):
 	   self.showStack = not self.showStack
 
+        if (event.type == KEYUP and event.key == K_t):
+	   self.tracking = not self.tracking
+
+           
         return LcarsScreen.handleEvents(self, event, fpsClock)
     
     def timeStamped(self, fname, fmt='%Y-%m-%d-%H-%M-%S_{fname}'):
