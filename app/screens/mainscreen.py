@@ -85,7 +85,8 @@ class MainScreen(LcarsScreen):
               self.preview = True
 
         if (event.type == KEYUP and event.key == K_s):
-	   self.showStack = not self.showStack
+            self.showStack = not self.showStack
+            self.stack.clear()
 
         if (event.type == KEYUP and event.key == K_t):
 	   self.tracking = not self.tracking
