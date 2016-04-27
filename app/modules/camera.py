@@ -57,7 +57,6 @@ class Camera:
             self.camera.capture(stream, use_video_port=True, format='raw')
 	    stream.seek(0)
 	    stream.readinto(self.yuv)
-            stream.close()
             yuv2rgb.convert(self.yuv, self.rgb, self.width, self.height)
             #image = self.rawCapture.array
             #self.rawCapture.truncate(0)
@@ -100,3 +99,7 @@ class Camera:
     def startPreview(self):
 	if self.rpiCam:
 	   self.camera.start_preview()
+
+    def stopPreview(self):
+	if self.rpiCam:
+	   self.camera.stop_preview()

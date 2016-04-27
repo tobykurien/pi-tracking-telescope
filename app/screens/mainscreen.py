@@ -1,6 +1,7 @@
 from datetime import datetime
 import pygame
 from pygame.rect import Rect
+from pygame.locals import *
 
 from modules.focus import ProcessFocus
 from modules.stacking import ProcessStacking
@@ -13,9 +14,15 @@ from ui.widgets.sprite import LcarsMoveToMouse
 
 
 class MainScreen(LcarsScreen):
+    def __init__(self, config, camera):
+        self.config = config
+        self.cam = camera
+	LcarsScreen.__init__(self)
+
     def setup(self, all_sprites):
         self.image = None
         self.zoomPoint = None
+        self.preview = False
 
         # detect focus
         self.focus = ProcessFocus()
@@ -55,6 +62,14 @@ class MainScreen(LcarsScreen):
                 Rect(100, 100, self.image.get_width(), self.image.get_height())) 
 
     def handleEvents(self, event, fpsClock):
+        if (event.type == KEYUP and event.key == K_p):
+           if (self.preview): 
+	      self.cam.stopPreview()
+              self.preview = False
+           else:
+	      self.cam.startPreview()
+              self.preview = True
+
         return LcarsScreen.handleEvents(self, event, fpsClock)
     
     def timeStamped(self, fname, fmt='%Y-%m-%d-%H-%M-%S_{fname}'):
