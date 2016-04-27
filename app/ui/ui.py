@@ -6,7 +6,10 @@ class UserInterface:
                  ui_placement_mode=False, fps=60, dev_mode=False,
                  audio=(22050, -8, 1, 1024)):
         # init system
-        pygame.mixer.init(audio[0], audio[1], audio[2], audio[3])
+        try:
+            if (audio): pygame.mixer.init(audio[0], audio[1], audio[2], audio[3])
+        except:
+            pass
         pygame.font.init()
         pygame.init()
         

@@ -1,7 +1,6 @@
 import cv2
 import time
 import io
-import yuv2rgb
 import pygame
 
 class Camera:
@@ -26,12 +25,13 @@ class Camera:
         # import the necessary packages
         from picamera.array import PiRGBArray
         from picamera import PiCamera
+        import yuv2rgb
         
         # initialize the camera and grab a reference to the raw camera capture
         camera = PiCamera()
         camera.resolution = (self.width, self.height)
         camera.framerate = self.fps
-	camera.crop = (0.0, 0.0, 1.0, 1.0)
+        camera.crop = (0.0, 0.0, 1.0, 1.0)
         self.camera = camera
         self.rawCapture = PiRGBArray(camera, size=(self.width, self.height))
         self.rgb = bytearray(self.width * self.height * 3)
@@ -55,8 +55,8 @@ class Camera:
         if self.rpiCam:
             stream = io.BytesIO()
             self.camera.capture(stream, use_video_port=True, format='raw')
-	    stream.seek(0)
-	    stream.readinto(self.yuv)
+            stream.seek(0)
+            stream.readinto(self.yuv)
             yuv2rgb.convert(self.yuv, self.rgb, self.width, self.height)
             #image = self.rawCapture.array
             #self.rawCapture.truncate(0)
