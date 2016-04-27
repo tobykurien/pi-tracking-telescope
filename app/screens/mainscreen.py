@@ -23,6 +23,7 @@ class MainScreen(LcarsScreen):
         self.image = None
         self.zoomPoint = None
         self.preview = False
+        self.timer = 0
 
         # detect focus
         self.focus = ProcessFocus()
@@ -33,7 +34,7 @@ class MainScreen(LcarsScreen):
         self.stack.start()
         self.showStack = False
         
-        self.focusText = LcarsText((255,0,0), (17,303), "Focus: xxxxxx")
+        self.focusText = LcarsText((255,0,0), (17,303), "Focus: ")
         
         all_sprites.add(LcarsBackgroundImage("assets/jarvis.png"))
         all_sprites.add(self.focusText)
@@ -48,11 +49,12 @@ class MainScreen(LcarsScreen):
             image = self.stack.getFrame()
 
         if (image == None): return
-        self.image = image
+        self.image = pygame.image.frombuffer(image, (len(image[0]), len(image)), 'RGB').convert()
         
     def update(self, screenSurface, fpsClock):
-        self.focusText.renderText("Focus: %d" % self.focus.focus)
-        self.focusText.update(screenSurface)
+        if pygame.time.get_ticks() - self.timer > 100:
+            self.focusText.setText("Focus: %d" % self.focus.focus)
+            self.timer = pygame.time.get_ticks()
                            
         if (self.image != None):
             screenSurface.blit(self.image,
@@ -69,6 +71,9 @@ class MainScreen(LcarsScreen):
            else:
 	      self.cam.startPreview()
               self.preview = True
+
+        if (event.type == KEYUP and event.key == K_s):
+	   self.showStack = not self.showStack
 
         return LcarsScreen.handleEvents(self, event, fpsClock)
     

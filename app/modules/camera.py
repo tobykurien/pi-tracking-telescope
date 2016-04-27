@@ -25,7 +25,6 @@ class Camera:
         # import the necessary packages
         from picamera.array import PiRGBArray
         from picamera import PiCamera
-        import yuv2rgb
         
         # initialize the camera and grab a reference to the raw camera capture
         camera = PiCamera()
@@ -53,14 +52,18 @@ class Camera:
         '''
         
         if self.rpiCam:
-            stream = io.BytesIO()
-            self.camera.capture(stream, use_video_port=True, format='raw')
-            stream.seek(0)
-            stream.readinto(self.yuv)
-            yuv2rgb.convert(self.yuv, self.rgb, self.width, self.height)
-            #image = self.rawCapture.array
-            #self.rawCapture.truncate(0)
-            return pygame.image.frombuffer(self.rgb[0:(self.width*self.height*3)], (self.width, self.height), 'RGB')
+            #import yuv2rgb
+            #stream = io.BytesIO()
+            #self.camera.capture(stream, use_video_port=True, format='raw')
+            #stream.seek(0)
+            #stream.readinto(self.yuv)
+            #yuv2rgb.convert(self.yuv, self.rgb, self.width, self.height)
+            #return pygame.image.frombuffer(self.rgb[0:(self.width*self.height*3)], (self.width, self.height), 'RGB')
+
+            self.camera.capture(self.rawCapture, use_video_port=True, format='bgr')
+            image = self.rawCapture.array
+            self.rawCapture.truncate(0)
+            return image
         else:
             _, image = self.rawCapture.read()
             return image
