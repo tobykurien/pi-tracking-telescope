@@ -15,8 +15,11 @@
 #define Y_MAX_PIN          15
 
 int stepsize = 100;
-int varDelay = 0;
-
+int varDelayX = 100;
+int varDelayY = 10;
+int moveX = -1;
+int moveY = -1;
+ 
 void setup() {
     pinMode(X_ENABLE_PIN, OUTPUT);
     pinMode(Y_ENABLE_PIN, OUTPUT);
@@ -25,6 +28,15 @@ void setup() {
 
     Serial.begin(9600);
     printHelp();
+    reset();
+}
+
+void reset() {
+    stepsize = 100;
+    varDelayX = 10;
+    varDelayY = 10;
+    moveX = -1;
+    moveY = -1;  
 }
 
 void stepX(int steps, int dir) {
@@ -39,9 +51,9 @@ void stepX(int steps, int dir) {
 
     for (int x = 0; x < steps; x++) {
         digitalWrite(X_STEP_PIN, HIGH);
-        //delay(varDelay);
+        delayMicroseconds(varDelayX);
         digitalWrite(X_STEP_PIN, LOW);
-        //delay(varDelay);
+        delayMicroseconds(varDelayX);
 
         if(x%50==0)Serial.println(x);
     }
@@ -62,9 +74,9 @@ void stepY(int steps, int dir) {
 
     for (int x = 0; x < steps; x++) {
         digitalWrite(Y_STEP_PIN, HIGH);
-        //delay(varDelay);
+        delayMicroseconds(varDelayY);
         digitalWrite(Y_STEP_PIN, LOW);
-        //delay(varDelay);
+        delayMicroseconds(varDelayY);
 
         if(x%50==0)Serial.println(x);
     }
@@ -79,14 +91,32 @@ void printHelp(){
       Serial.println("1 Enable Motors ");
       Serial.println("0 Disable Motors ");
       Serial.println("");
-      Serial.println("2  - 9 stepsize from 1 to 1000");
+      Serial.println("2  - 9 stepsize from 1 to a lot");
       Serial.println("w up");
       Serial.println("s down");
       Serial.println("a left");
       Serial.println("d right");
+      Serial.println("");
+      Serial.println("u incr. up");
+      Serial.println("j incr. down");
+      Serial.println("h incr. left");
+      Serial.println("k incr. right");
+      Serial.println("");
+      Serial.println("r reset");
 }
 
 void loop() {
+    if (varDelayX < 10) varDelayX = 10; 
+    if (varDelayY < 10) varDelayY = 10; 
+  
+    if (moveX >= 0) {
+      stepX(stepsize, moveX);
+    }
+
+    if (moveY >= 0) {
+      stepY(stepsize, moveY);
+    }
+  
     if (Serial.available()) {
         byte r = Serial.read();
 
@@ -157,6 +187,27 @@ void loop() {
             case '9':
                 Serial.println("stepsize = 20,000");
                 stepsize = 20000;
+                break;
+
+            case 'u':
+                if (moveY == 0) moveY = -1; else moveY = 1;
+                varDelayY = varDelayY + 100;
+                break;
+            case 'j':
+                if (moveY == 1) moveY = -1; else moveY = 0;
+                varDelayY = varDelayY - 100;
+                break;
+            case 'k':
+                if (moveX == 0) moveX = -1; else moveX = 1;
+                varDelayX = varDelayX + 100;
+                break;
+            case 'h':
+                if (moveX == 1) moveX = -1; else moveX = 0;
+                varDelayX = varDelayX - 100;
+                break;
+
+            case 'r':
+                reset();
                 break;
 
             default:
