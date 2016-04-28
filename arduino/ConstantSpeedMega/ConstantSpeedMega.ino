@@ -153,8 +153,8 @@ void readNumber() {
 
 void loop() {  
     if (Serial.available()) {
-        Timer1.setPeriod(1000000);
         Timer1.detachInterrupt();
+        Timer3.detachInterrupt();
         byte r = Serial.read();
 
         switch (r) {
