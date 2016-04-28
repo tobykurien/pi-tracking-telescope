@@ -1,6 +1,6 @@
 // PiScope Arduino firmware
 // Using an Arduino Mega with a stepper motor shield
-
+#include "TimerOne.h"
 
 #define X_STEP_PIN         54
 #define X_DIR_PIN          55
@@ -14,11 +14,19 @@
 #define Y_MIN_PIN          14
 #define Y_MAX_PIN          15
 
-int stepsize = 100;
-int varDelayX = 100;
-int varDelayY = 10;
-int moveX = -1;
-int moveY = -1;
+#define MIN_DELAY          10 // minimum timer tick
+
+// these are initialized in reset()
+int stepsize;
+int varDelayX;
+int varDelayY;
+int moveX;
+int moveY;
+int timerX;
+int timerY;
+boolean stateX;
+boolean stateY;
+int timerTick;
  
 void setup() {
     pinMode(X_ENABLE_PIN, OUTPUT);
@@ -26,22 +34,53 @@ void setup() {
     digitalWrite(X_ENABLE_PIN, HIGH);
     digitalWrite(Y_ENABLE_PIN, HIGH);
 
+    Timer1.initialize(MIN_DELAY); // will be reset once stepping begins
+    Timer1.attachInterrupt(stepperInterrupt, MIN_DELAY);
+
     Serial.begin(9600);
     printHelp();
     reset();
 }
 
 void reset() {
-    stepsize = 100;
-    varDelayX = 10;
-    varDelayY = 10;
+    stepsize = 1;
+    varDelayX = MIN_DELAY;
+    varDelayY = MIN_DELAY;
     moveX = -1;
-    moveY = -1;  
+    moveY = -1; 
+     
+    timerX = 0; // timer accumulator for stepper X
+    timerY = 0; // timer accumulator for stepper Y
+    timerTick = MIN_DELAY; // microseconds per timer tick
+    stateX = false;
+    stateY = false;
+}
+
+void stepperInterrupt(void) {
+    if (moveX >= 0) {
+          timerX++;
+          if (timerX * timerTick >= varDelayX) {
+            timerX = 0;
+            stateX = !stateX;
+            digitalWrite(X_DIR_PIN, moveX == 0 ? LOW : HIGH);
+            digitalWrite(X_STEP_PIN, stateX);
+          }
+    }
+
+    if (moveY >= 0) {
+          timerY++;
+          if (timerY * timerTick >= varDelayY) {
+            timerY = 0;
+            stateY = !stateY;
+            digitalWrite(Y_DIR_PIN, moveY == 0 ? LOW : HIGH);
+            digitalWrite(Y_STEP_PIN, stateY);
+          }
+    }
 }
 
 void stepX(int steps, int dir) {
+    if (varDelayX < MIN_DELAY) varDelayX = MIN_DELAY; 
     digitalWrite(X_ENABLE_PIN, LOW);
-    digitalWrite(Y_ENABLE_PIN, LOW);
   
     if (dir == 0) {
         digitalWrite(X_DIR_PIN, LOW);
@@ -59,11 +98,10 @@ void stepX(int steps, int dir) {
     }
 
     digitalWrite(X_ENABLE_PIN, HIGH);
-    digitalWrite(Y_ENABLE_PIN, HIGH);
 }
 
 void stepY(int steps, int dir) {
-    digitalWrite(X_ENABLE_PIN, LOW);
+    if (varDelayY < MIN_DELAY) varDelayY = MIN_DELAY; 
     digitalWrite(Y_ENABLE_PIN, LOW);
 
     if (dir == 0) {
@@ -82,7 +120,6 @@ void stepY(int steps, int dir) {
     }
 
     digitalWrite(X_ENABLE_PIN, HIGH);
-    digitalWrite(Y_ENABLE_PIN, HIGH);
 }
 
 
@@ -105,17 +142,14 @@ void printHelp(){
       Serial.println("r reset");
 }
 
-void loop() {
-    if (varDelayX < 10) varDelayX = 10; 
-    if (varDelayY < 10) varDelayY = 10; 
-  
-    if (moveX >= 0) {
-      stepX(stepsize, moveX);
-    }
-
-    if (moveY >= 0) {
-      stepY(stepsize, moveY);
-    }
+void loop() {  
+//    if (moveX >= 0) {
+//      stepX(stepsize, moveX);
+//    }
+//
+//    if (moveY >= 0) {
+//      stepY(stepsize, moveY);
+//    }
   
     if (Serial.available()) {
         byte r = Serial.read();
