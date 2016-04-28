@@ -1,6 +1,7 @@
 // PiScope Arduino firmware
 // Using an Arduino Mega with a stepper motor shield
 #include "TimerOne.h"
+#include "TimerThree.h"
 
 #define X_STEP_PIN         54
 #define X_DIR_PIN          55
@@ -38,6 +39,7 @@ void setup() {
     digitalWrite(Y_ENABLE_PIN, HIGH);
 
     Timer1.initialize(1000000); // will be reset once stepping begins
+    Timer3.initialize(1000000); // will be reset once stepping begins
 
     Serial.begin(9600);
     printHelp();
@@ -127,10 +129,13 @@ void printHelp(){
       Serial.println("a left");
       Serial.println("d right");
       Serial.println("");
-      Serial.println("u incr. up");
-      Serial.println("j incr. down");
-      Serial.println("h incr. left");
-      Serial.println("k incr. right");
+      Serial.println("u const. up");
+      Serial.println("j const. down");
+      Serial.println("h const. left");
+      Serial.println("k const. right");
+      Serial.println("");
+      Serial.println("m[0-9]. set base speed");
+      Serial.println("n[0-9]. set incl. speed");
       Serial.println("");
       Serial.println("r reset");
 }
@@ -261,6 +266,6 @@ void loop() {
         }
 
         Timer1.attachInterrupt(stepperInterruptX, varDelayX);
-        Timer1.attachInterrupt(stepperInterruptY, varDelayY);
+        Timer3.attachInterrupt(stepperInterruptY, varDelayY);
     }
 }
