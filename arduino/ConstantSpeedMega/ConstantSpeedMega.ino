@@ -14,7 +14,7 @@
 #define Y_MIN_PIN          14
 #define Y_MAX_PIN          15
 
-#define MIN_DELAY          100 // minimum timer tick
+#define MIN_DELAY          20 // minimum timer tick
 
 // these are initialized in reset()
 int stepsize;
@@ -24,11 +24,8 @@ int moveX;
 int moveY;
 
 // interrupt variables
-int timerX;
-int timerY;
 boolean stateX;
 boolean stateY;
-int timerTick;
 
 // variables for reading in speed
 String str;
@@ -40,8 +37,7 @@ void setup() {
     digitalWrite(X_ENABLE_PIN, HIGH);
     digitalWrite(Y_ENABLE_PIN, HIGH);
 
-    Timer1.initialize(MIN_DELAY); // will be reset once stepping begins
-    Timer1.attachInterrupt(stepperInterrupt, MIN_DELAY);
+    Timer1.initialize(1000000); // will be reset once stepping begins
 
     Serial.begin(9600);
     printHelp();
@@ -49,38 +45,29 @@ void setup() {
 }
 
 void reset() {
-    stepsize = 1;
+    stepsize = 500;
     varDelayX = MIN_DELAY;
     varDelayY = MIN_DELAY;
     moveX = -1;
     moveY = -1; 
      
-    timerX = 0; // timer accumulator for stepper X
-    timerY = 0; // timer accumulator for stepper Y
-    timerTick = MIN_DELAY; // microseconds per timer tick
     stateX = false;
     stateY = false;
 }
 
-void stepperInterrupt(void) {
+void stepperInterruptX(void) {
     if (moveX >= 0) {
-          timerX++;
-          if (timerX * timerTick >= varDelayX) {
-            timerX = 0;
             stateX = !stateX;
             digitalWrite(X_DIR_PIN, moveX == 0 ? LOW : HIGH);
             digitalWrite(X_STEP_PIN, stateX);
-          }
     }
+}
 
+void stepperInterruptY(void) {
     if (moveY >= 0) {
-          timerY++;
-          if (timerY * timerTick >= varDelayY) {
-            timerY = 0;
-            stateY = !stateY;
-            digitalWrite(Y_DIR_PIN, moveY == 0 ? LOW : HIGH);
-            digitalWrite(Y_STEP_PIN, stateY);
-          }
+          stateY = !stateY;
+          digitalWrite(Y_DIR_PIN, moveY == 0 ? LOW : HIGH);
+          digitalWrite(Y_STEP_PIN, stateY);
     }
 }
 
@@ -161,6 +148,8 @@ void readNumber() {
 
 void loop() {  
     if (Serial.available()) {
+        Timer1.setPeriod(1000000);
+        Timer1.detachInterrupt();
         byte r = Serial.read();
 
         switch (r) {
@@ -233,33 +222,23 @@ void loop() {
                 break;
 
             case 'u':
-                noInterrupts();
                 if (moveY == 0) moveY = -1; else moveY = 1;
-                interrupts();
                 break;
             case 'j':
-                noInterrupts();
                 if (moveY == 1) moveY = -1; else moveY = 0;
-                interrupts();
                 break;
             case 'k':
-                noInterrupts();
                 if (moveX == 0) moveX = -1; else moveX = 1;
-                interrupts();
                 break;
             case 'h':
-                noInterrupts();
                 if (moveX == 1) moveX = -1; else moveX = 0;
-                interrupts();
                 break;
 
             case 'm':
                 readNumber();
                 number = str.toInt();
-                noInterrupts();
                 varDelayX = number;
                 if (varDelayX < MIN_DELAY) varDelayX = MIN_DELAY; 
-                interrupts();
                 Serial.print("speedX = ");
                 Serial.println(varDelayX);
                 break;
@@ -267,22 +246,21 @@ void loop() {
             case 'n':
                 readNumber();
                 number = str.toInt();
-                noInterrupts();
                 varDelayY = number;
                 if (varDelayY < MIN_DELAY) varDelayY = MIN_DELAY; 
-                interrupts();
                 Serial.print("speedY = ");
                 Serial.println(varDelayY);
                 break;
 
             case 'r':
-                noInterrupts();              
                 reset();
-                interrupts();
                 break;
 
             default:
                 break;
         }
+
+        Timer1.attachInterrupt(stepperInterruptX, varDelayX);
+        Timer1.attachInterrupt(stepperInterruptY, varDelayY);
     }
 }
