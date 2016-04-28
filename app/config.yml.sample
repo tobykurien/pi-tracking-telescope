@@ -4,4 +4,6 @@ camera_width: 800
 camera_height: 480
 camera_fps: 30
 
+telescope_dev: /dev/ttyACM0
+
 

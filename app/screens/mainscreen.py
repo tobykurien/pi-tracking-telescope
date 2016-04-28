@@ -13,13 +13,14 @@ from ui.widgets.gifimage import LcarsGifImage
 from ui.widgets.lcars_widgets import LcarsText
 from ui.widgets.screen import LcarsScreen
 from ui.widgets.sprite import LcarsMoveToMouse
+from modules.telescope import Telescope
 
 
 class MainScreen(LcarsScreen):
     def __init__(self, config, camera):
         self.config = config
         self.cam = camera
-	LcarsScreen.__init__(self)
+        LcarsScreen.__init__(self)
 
     def setup(self, all_sprites):
         self.image = None
@@ -37,7 +38,7 @@ class MainScreen(LcarsScreen):
         self.showStack = False
 
         # tracking images
-        self.tracker = ProcessTracking()
+        self.tracker = ProcessTracking(Telescope(self.config['telescope_dev']))
         self.tracker.start()
         self.tracking = False
 
