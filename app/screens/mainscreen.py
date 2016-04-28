@@ -38,7 +38,8 @@ class MainScreen(LcarsScreen):
         self.showStack = False
 
         # tracking images
-        self.tracker = ProcessTracking(Telescope(self.config['telescope_dev']))
+        self.telescope = Telescope(self.config['telescope_dev'])
+        self.tracker = ProcessTracking(self.telescope)
         self.tracker.start()
         self.tracking = False
 
@@ -94,8 +95,17 @@ class MainScreen(LcarsScreen):
             self.stack.clear()
 
         if (event.type == KEYUP and event.key == K_t):
-	   self.tracking = not self.tracking
+            self.tracking = not self.tracking
 
+        if (event.type == KEYUP and event.key == K_w):
+            self.telescope.setAlt(8000)
+        if (event.type == KEYUP and event.key == K_z):
+            self.telescope.stop()
+        if (event.type == KEYUP and event.key == K_x):
+            self.telescope.start()
+
+        if (event.type == KEYUP and event.key == K_t):
+            self.tracking = not self.tracking
            
         return LcarsScreen.handleEvents(self, event, fpsClock)
     
