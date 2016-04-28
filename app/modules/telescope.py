@@ -26,6 +26,7 @@ class Telescope:
         self.file.write(command)
         self.file.write(command)
         self.file.flush()
+        print "after write"
 
     
     def setAzimuth(self, speed):
@@ -40,8 +41,12 @@ class Telescope:
         self.file.write(command)
         self.file.write(command)
         self.file.flush()
+        print "after write"
+
         
     def calcDuration(self, speed):
+        if speed == 0:
+            speed = 1
         duration = Telescope.DURATION_CONST / speed
         duration = int(abs(duration))
         if duration > Telescope.MAX_DURATION:
