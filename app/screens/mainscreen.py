@@ -85,12 +85,12 @@ class MainScreen(LcarsScreen):
 
     def handleEvents(self, event, fpsClock):
         if (event.type == KEYUP and event.key == K_p):
-           if (self.preview): 
-	      self.cam.stopPreview()
-              self.preview = False
-           else:
-	      self.cam.startPreview()
-              self.preview = True
+            if (self.preview): 
+                self.cam.stopPreview()
+                self.preview = False
+            else:
+                self.cam.startPreview()
+                self.preview = True
 
         if (event.type == KEYUP and event.key == K_s):
             self.showStack = not self.showStack

@@ -42,7 +42,7 @@ class ProcessTracking(Thread):
             self.x_correction = self.controllerX.GenOut(self.xerror)
         if self.yerror != 0:
             self.y_correction = self.controllerY.GenOut(self.yerror)
-        print self.xerror,self.yerror #, self.x_correction, self.y_correction
+        #print self.x_correction,self.y_correction #, self.x_correction, self.y_correction
 
 
     def updateError(self, frame):
@@ -121,9 +121,9 @@ class ProcessTracking(Thread):
         self.controllerY = pid.PID()
 
         self.controllerX.SetKp(100.0)
-        self.controllerX.SetKi(20.0)
+        self.controllerX.SetKi(10.0)
         self.controllerY.SetKp(100.0)
-        self.controllerY.SetKi(20.0)
+        self.controllerY.SetKi(10.0)
 
         self.x_correction = 0
         self.y_correction = 0
@@ -138,7 +138,8 @@ class ProcessTracking(Thread):
               
         self.last_command = 0        
         self.frame = None
-        self.queue = Queue()
+        self.queue = Queue(maxsize=1)
+        
 
                 
     def run(self):

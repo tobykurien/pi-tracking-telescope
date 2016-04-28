@@ -2,7 +2,10 @@ from subprocess import call
 
 
 class Telescope:
-    MAX_SPEED = 10000
+    MAX_SPEED = 10000.0
+    MIN_DURATION = 20.0
+    MAX_DURATION = 20000.0
+    DURATION_CONST=  MAX_SPEED * MIN_DURATION
     
     def __init__(self, device='/dev/ttyACM0'):
         call(("stty -F %s -imaxbel -opost -isig -icanon -echo -echoe -ixoff -ixon 9600" % device).split(" "))
@@ -11,35 +14,44 @@ class Telescope:
 
         
     def setAlt(self, speed):
-        speed = int(speed)
         if (speed < 0):
             command = 'j'
-            val = Telescope.MAX_SPEED + speed
         else:
             command = 'u'
-            val = Telescope.MAX_SPEED - speed
-            
-        if val < 0: val = 0;
-        self.file.write("n%sx" % val)
+
+        duration = self.calcDuration(speed)            
+        
+        print "n%dx" % duration
+        self.file.write("n%dx" % duration)
         self.file.write(command)
         self.file.write(command)
         self.file.flush()
+
     
     def setAzimuth(self, speed):
-        speed = int(speed)
-
         if (speed < 0):
             command = 'h'
-            val = Telescope.MAX_SPEED + speed
         else:
             command = 'k'
-            val = Telescope.MAX_SPEED - speed
-            
-        if val < 0: val = 0;
-        self.file.write("m%sx" % val)
+        
+        duration = self.calcDuration(speed)            
+        print "m%dx" % duration
+        self.file.write("m%dx" % duration)
         self.file.write(command)
         self.file.write(command)
         self.file.flush()
+        
+    def calcDuration(self, speed):
+        duration = Telescope.DURATION_CONST / speed
+        duration = int(abs(duration))
+        if duration > Telescope.MAX_DURATION:
+            duration = Telescope.MAX_DURATION
+        if duration <= Telescope.MIN_DURATION: 
+            duration = Telescope.MIN_DURATION
+            
+        return duration
+            
+
     
     def start(self):
         self.file.write("1")
