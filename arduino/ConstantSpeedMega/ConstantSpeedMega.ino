@@ -14,7 +14,7 @@
 #define Y_MIN_PIN          14
 #define Y_MAX_PIN          15
 
-#define MIN_DELAY          10 // minimum timer tick
+#define MIN_DELAY          100 // minimum timer tick
 
 // these are initialized in reset()
 int stepsize;
@@ -22,11 +22,17 @@ int varDelayX;
 int varDelayY;
 int moveX;
 int moveY;
+
+// interrupt variables
 int timerX;
 int timerY;
 boolean stateX;
 boolean stateY;
 int timerTick;
+
+// variables for reading in speed
+String str;
+int number;
  
 void setup() {
     pinMode(X_ENABLE_PIN, OUTPUT);
@@ -142,15 +148,18 @@ void printHelp(){
       Serial.println("r reset");
 }
 
+void readNumber() {
+    str = "";
+    while (true) {
+      if (Serial.available()) {
+        byte c = Serial.read();
+        if (c >= '0' && c <= '9') str += (c - '0');
+        else break;
+      }
+    }
+}
+
 void loop() {  
-//    if (moveX >= 0) {
-//      stepX(stepsize, moveX);
-//    }
-//
-//    if (moveY >= 0) {
-//      stepY(stepsize, moveY);
-//    }
-  
     if (Serial.available()) {
         byte r = Serial.read();
 
@@ -224,24 +233,52 @@ void loop() {
                 break;
 
             case 'u':
+                noInterrupts();
                 if (moveY == 0) moveY = -1; else moveY = 1;
-                varDelayY = varDelayY + 100;
+                interrupts();
                 break;
             case 'j':
+                noInterrupts();
                 if (moveY == 1) moveY = -1; else moveY = 0;
-                varDelayY = varDelayY - 100;
+                interrupts();
                 break;
             case 'k':
+                noInterrupts();
                 if (moveX == 0) moveX = -1; else moveX = 1;
-                varDelayX = varDelayX + 100;
+                interrupts();
                 break;
             case 'h':
+                noInterrupts();
                 if (moveX == 1) moveX = -1; else moveX = 0;
-                varDelayX = varDelayX - 100;
+                interrupts();
+                break;
+
+            case 'm':
+                readNumber();
+                number = str.toInt();
+                noInterrupts();
+                varDelayX = number;
+                if (varDelayX < MIN_DELAY) varDelayX = MIN_DELAY; 
+                interrupts();
+                Serial.print("speedX = ");
+                Serial.println(varDelayX);
+                break;
+
+            case 'n':
+                readNumber();
+                number = str.toInt();
+                noInterrupts();
+                varDelayY = number;
+                if (varDelayY < MIN_DELAY) varDelayY = MIN_DELAY; 
+                interrupts();
+                Serial.print("speedY = ");
+                Serial.println(varDelayY);
                 break;
 
             case 'r':
+                noInterrupts();              
                 reset();
+                interrupts();
                 break;
 
             default:
