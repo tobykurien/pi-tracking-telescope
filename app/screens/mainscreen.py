@@ -62,7 +62,9 @@ class MainScreen(LcarsScreen):
         if self.showStack: self.stack.addFrame(image)
         if self.showStack and self.stack.outputFrame is not None:
             image = self.stack.getFrame()
-
+        if self.tracking:
+            image =  self.tracker.getFrame()
+            
         if (image == None): return
         self.image = pygame.image.frombuffer(image, (len(image[0]), len(image)), 'RGB').convert()
         
@@ -96,6 +98,8 @@ class MainScreen(LcarsScreen):
 
         if (event.type == KEYUP and event.key == K_t):
             self.tracking = not self.tracking
+            if not self.tracking:
+                self.tracker.reset()
 
         if (event.type == KEYUP and event.key == K_w):
             self.telescope.setAlt(8000)
@@ -104,8 +108,6 @@ class MainScreen(LcarsScreen):
         if (event.type == KEYUP and event.key == K_x):
             self.telescope.start()
 
-        if (event.type == KEYUP and event.key == K_t):
-            self.tracking = not self.tracking
            
         return LcarsScreen.handleEvents(self, event, fpsClock)
     

@@ -12,21 +12,9 @@ class ProcessTracking(Thread):
     def __init__(self, piscopeController):
         Thread.__init__(self)
         self.piscopeController = piscopeController
-        self.queue = Queue()
         self.setDaemon(True) # terminate on exit
         self.status = "Initial"
-        self.controllerX = pid.PID()
-        self.controllerY = pid.PID()
-
-        self.x_correction = 0
-        self.y_correction = 0
-
-        self.prev_gray = None
-        self.track_len = 5000
-        self.tracks = []
-
-        self.xerror = 0
-        self.yerror = 0
+        self.reset()
 
         self.lk_params = dict( winSize  = (15, 15),
                   maxLevel = 2,
@@ -54,7 +42,7 @@ class ProcessTracking(Thread):
             self.x_correction = self.controllerX.GenOut(self.xerror)
         if self.yerror != 0:
             self.y_correction = self.controllerY.GenOut(self.yerror)
-        print self.xerror,self.yerror, self.x_correction, self.y_correction
+        print self.xerror,self.yerror #, self.x_correction, self.y_correction
 
 
     def updateError(self, frame):
@@ -115,16 +103,67 @@ class ProcessTracking(Thread):
 
 
     def updatePiScope(self,frame):
+        self.frame = frame
         self.updateError(frame)
         self.updateCorrection()
-        self.piscopeController.setCorrection(self.x_correction, self.y_correction)        
+        #print self.x_correction, self.y_correction
+        if time.time() - self.last_command > 1:
+            self.piscopeController.setAlt(self.y_correction)        
+            self.piscopeController.setAzimuth(self.x_correction)
+            self.last_command = time.time()
+                
+
+    def reset(self):
+        self.xerror = 0
+        self.yerror = 0
+
+        self.controllerX = pid.PID()
+        self.controllerY = pid.PID()
+
+        self.controllerX.SetKp(100.0)
+        self.controllerX.SetKi(20.0)
+        self.controllerY.SetKp(100.0)
+        self.controllerY.SetKi(20.0)
+
+        self.x_correction = 0
+        self.y_correction = 0
+
+        self.prev_gray = None
+        self.track_len = 5000
+        self.tracks = []
+        self.draw_trails = True
+
+        self.xerror = 0
+        self.yerror = 0
+              
+        self.last_command = 0        
+        self.frame = None
+        self.queue = Queue()
 
                 
     def run(self):
+        framecount = 0
         while True:
             try:
                 frame = self.queue.get()
-                self.updatePiScope(frame)
-                self.status = self.queue.qsize()
+                if frame != None:
+                    self.updatePiScope(frame)
+                    framecount = 0
+                framecount += 1
+                self.status = framecount
             except:
                 print("ERROR in ProcessTracking")
+
+
+    def getFrame(self):
+        if self.frame==None:
+            return None
+        vis_frame = self.frame.copy()
+        #draw_str(vis_frame, (20, 20), 'track count: %d' % len(tracker.tracks))
+        if self.draw_trails:
+            cv2.polylines(vis_frame, [np.int32(tr) for tr in [[t[:2] for t in tr]  for tr in self.tracks]], False, (0, 255, 0))
+
+        for tr in self.tracks:
+            cv2.circle(vis_frame, (tr[-1][0], tr[-1][1]), 2, (0, 255, 0), -1)
+
+        return vis_frame

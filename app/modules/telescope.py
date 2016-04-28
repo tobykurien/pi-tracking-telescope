@@ -1,10 +1,17 @@
+from subprocess import call
+
+
 class Telescope:
     MAX_SPEED = 10000
     
     def __init__(self, device='/dev/ttyACM0'):
+        call(("stty -F %s -imaxbel -opost -isig -icanon -echo -echoe -ixoff -ixon 9600" % device).split(" "))
+
         self.file = open(device, "w")
+
         
     def setAlt(self, speed):
+        speed = int(speed)
         if (speed < 0):
             command = 'j'
             val = Telescope.MAX_SPEED + speed
@@ -19,6 +26,8 @@ class Telescope:
         self.file.flush()
     
     def setAzimuth(self, speed):
+        speed = int(speed)
+
         if (speed < 0):
             command = 'h'
             val = Telescope.MAX_SPEED + speed

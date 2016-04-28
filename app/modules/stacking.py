@@ -23,7 +23,7 @@ class ProcessStacking(Thread):
         
     def run(self):
         alpha = 0.1    # weight of the new frame 
-        beta = 1        # weight of the current frame
+        beta = 0.9        # weight of the current frame
         gamma = 0       # scalar added to each sum
 
         while True:
