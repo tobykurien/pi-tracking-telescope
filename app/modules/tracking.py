@@ -26,7 +26,7 @@ class ProcessTracking(Thread):
                   maxLevel = 2,
                   criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
-        self.feature_params = dict( maxCorners = 500,
+        self.feature_params = dict( maxCorners = 5,
                        qualityLevel = 0.3,
                        minDistance = 7,
                        blockSize = 7 )
@@ -38,7 +38,7 @@ class ProcessTracking(Thread):
         return self.status
         
     def addFrame(self, image):
-        if self.queue.qsize() < 10:
+        if self.queue.qsize() < 1:
             self.queue.put(image)
 
     def updateCorrection(self):
@@ -135,10 +135,10 @@ class ProcessTracking(Thread):
         self.controllerX = pid.PID()
         self.controllerY = pid.PID()
 
-        self.controllerX.SetKp(100.0)
-        self.controllerX.SetKi(10.0)
-        self.controllerY.SetKp(100.0)
-        self.controllerY.SetKi(10.0)
+        self.controllerX.SetKp(0.0)
+        self.controllerX.SetKi(0.0)
+        self.controllerY.SetKp(0.0)
+        self.controllerY.SetKi(0.0)
 
         self.x_correction = 0
         self.y_correction = 0
@@ -180,6 +180,10 @@ class ProcessTracking(Thread):
             vis_frame = self.frame.copy()
         finally:
             self.mutex.release()
+
+        rows,cols = vis_frame.shape[:2]        
+        M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
+        vis_frame = cv2.warpAffine(vis_frame,M,(cols,rows))
 
         #draw_str(vis_frame, (20, 20), 'track count: %d' % len(tracker.tracks))
         if self.draw_trails:
