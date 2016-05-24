@@ -27,6 +27,8 @@ int moveY;
 // interrupt variables
 boolean stateX;
 boolean stateY;
+boolean interruptXBusy;
+boolean interruptYBusy;
 
 // variables for reading in speed
 String str;
@@ -55,21 +57,29 @@ void reset() {
      
     stateX = false;
     stateY = false;
+    interruptXBusy = false;
+    interruptYBusy = false;
 }
 
 void stepperInterruptX(void) {
     if (moveX >= 0) {
+            if (interruptXBusy) return;
+            interruptXBusy = true;
             stateX = !stateX;
             digitalWrite(X_DIR_PIN, moveX == 0 ? LOW : HIGH);
             digitalWrite(X_STEP_PIN, stateX);
+            interruptXBusy = false;
     }
 }
 
 void stepperInterruptY(void) {
     if (moveY >= 0) {
+          if (interruptYBusy) return;
+          interruptYBusy = true;
           stateY = !stateY;
           digitalWrite(Y_DIR_PIN, moveY == 0 ? LOW : HIGH);
           digitalWrite(Y_STEP_PIN, stateY);
+          interruptYBusy = false;
     }
 }
 
