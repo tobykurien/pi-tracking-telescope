@@ -15,9 +15,9 @@ class Telescope:
         
     def setAlt(self, speed):
         if (speed < 0):
-            command = 'j'
-        else:
             command = 'u'
+        else:
+            command = 'j'
 
         duration = self.calcDuration(speed)            
         
@@ -30,9 +30,9 @@ class Telescope:
     
     def setAzimuth(self, speed):
         if (speed < 0):
-            command = 'h'
-        else:
             command = 'k'
+        else:
+            command = 'h'
         
         duration = self.calcDuration(speed)            
         print "m%dx" % duration
@@ -40,8 +40,31 @@ class Telescope:
         self.file.write(command)
         self.file.write(command)
         self.file.flush()
+
+    def setSteps(self, num):
+	self.file.write(num);
+	self.file.flush();
+
+    def up(self):
+	self.file.write("s");
+	self.file.flush();
+
+    def down(self):
+	self.file.write("w");
+	self.file.flush();
+
+    def left(self):
+	self.file.write("d");
+	self.file.flush();
+
+    def right(self):
+	self.file.write("a");
+	self.file.flush();
+
         
     def calcDuration(self, speed):
+        if speed == 0:
+            speed = 1
         duration = Telescope.DURATION_CONST / speed
         duration = int(abs(duration))
         if duration > Telescope.MAX_DURATION:

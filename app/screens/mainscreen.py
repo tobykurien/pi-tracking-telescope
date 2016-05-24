@@ -92,17 +92,28 @@ class MainScreen(LcarsScreen):
                 self.cam.startPreview()
                 self.preview = True
 
-        if (event.type == KEYUP and event.key == K_s):
-            self.showStack = not self.showStack
-            self.stack.clear()
-
         if (event.type == KEYUP and event.key == K_t):
             self.tracking = not self.tracking
             if not self.tracking:
                 self.tracker.reset()
 
+        if (event.type == KEYUP and event.key == K_s):
+            #self.showStack = not self.showStack
+            #self.stack.clear()
+            self.telescope.down()
         if (event.type == KEYUP and event.key == K_w):
-            self.telescope.setAlt(8000)
+            self.telescope.up()
+        if (event.type == KEYUP and event.key == K_a):
+            self.telescope.left()
+        if (event.type == KEYUP and event.key == K_d):
+            self.telescope.right()
+        if (event.type == KEYUP and event.key == K_1):
+            self.telescope.setSteps("3")
+        if (event.type == KEYUP and event.key == K_2):
+            self.telescope.setSteps("4")
+        if (event.type == KEYUP and event.key == K_3):
+            self.telescope.setSteps("5")
+
         if (event.type == KEYUP and event.key == K_z):
             self.telescope.stop()
         if (event.type == KEYUP and event.key == K_x):

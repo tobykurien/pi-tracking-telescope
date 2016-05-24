@@ -4,6 +4,10 @@ import time
 from threading import Thread
 from Queue import Queue
 import pid
+from threading import Thread, Lock
+import traceback
+
+
 
 
 class ProcessTracking(Thread):
@@ -11,6 +15,8 @@ class ProcessTracking(Thread):
 
     def __init__(self, piscopeController):
         Thread.__init__(self)
+        self.mutex = Lock()
+
         self.piscopeController = piscopeController
         self.setDaemon(True) # terminate on exit
         self.status = "Initial"
@@ -20,7 +26,7 @@ class ProcessTracking(Thread):
                   maxLevel = 2,
                   criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
-        self.feature_params = dict( maxCorners = 500,
+        self.feature_params = dict( maxCorners = 5,
                        qualityLevel = 0.3,
                        minDistance = 7,
                        blockSize = 7 )
@@ -32,7 +38,7 @@ class ProcessTracking(Thread):
         return self.status
         
     def addFrame(self, image):
-        if self.queue.qsize() < 10:
+        if self.queue.qsize() < 1:
             self.queue.put(image)
 
     def updateCorrection(self):
@@ -42,7 +48,7 @@ class ProcessTracking(Thread):
             self.x_correction = self.controllerX.GenOut(self.xerror)
         if self.yerror != 0:
             self.y_correction = self.controllerY.GenOut(self.yerror)
-        #print self.x_correction,self.y_correction #, self.x_correction, self.y_correction
+        print self.x_correction,self.y_correction #, self.x_correction, self.y_correction
 
 
     def updateError(self, frame):
@@ -66,11 +72,11 @@ class ProcessTracking(Thread):
                 if not good_flag:
                     continue
                 tr.append((x, y, current_time))
-                if len(tr) > self.track_len:
+                if len(tr) >  500:
                     del tr[0]
                 new_tracks.append(tr)
 
-                if(len(tr)>2):
+                if(len(tr)>=2):
                     t = np.float32([v[2] for v in tr])
                     x = np.float32([v[0] for v in tr])
                     y = np.float32([v[1] for v in tr])
@@ -103,11 +109,20 @@ class ProcessTracking(Thread):
 
 
     def updatePiScope(self,frame):
-        self.frame = frame
-        self.updateError(frame)
+        self.mutex.acquire()
+        try:
+            self.frame = frame
+        finally:
+            self.mutex.release()
+        
+        
+        rows,cols = frame.shape[:2]        
+        M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
+        rotated_frame = cv2.warpAffine(frame,M,(cols,rows))
+        self.updateError(rotated_frame)
         self.updateCorrection()
         #print self.x_correction, self.y_correction
-        if time.time() - self.last_command > 1:
+        if time.time() - self.last_command > 2:
             self.piscopeController.setAlt(self.y_correction)        
             self.piscopeController.setAzimuth(self.x_correction)
             self.last_command = time.time()
@@ -120,16 +135,15 @@ class ProcessTracking(Thread):
         self.controllerX = pid.PID()
         self.controllerY = pid.PID()
 
-        self.controllerX.SetKp(100.0)
-        self.controllerX.SetKi(10.0)
-        self.controllerY.SetKp(100.0)
-        self.controllerY.SetKi(10.0)
+        self.controllerX.SetKp(0.0)
+        self.controllerX.SetKi(0.0)
+        self.controllerY.SetKp(0.0)
+        self.controllerY.SetKi(0.0)
 
         self.x_correction = 0
         self.y_correction = 0
 
         self.prev_gray = None
-        self.track_len = 5000
         self.tracks = []
         self.draw_trails = True
 
@@ -152,14 +166,25 @@ class ProcessTracking(Thread):
                     framecount = 0
                 framecount += 1
                 self.status = framecount
-            except:
-                print("ERROR in ProcessTracking")
+            except Exception as e:
+                print("ERROR in ProcessTracking:"+str(e))
+                tb = traceback.format_exc()
+                print(tb)
 
 
     def getFrame(self):
         if self.frame==None:
             return None
-        vis_frame = self.frame.copy()
+        self.mutex.acquire()
+        try:
+            vis_frame = self.frame.copy()
+        finally:
+            self.mutex.release()
+
+        rows,cols = vis_frame.shape[:2]        
+        M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
+        vis_frame = cv2.warpAffine(vis_frame,M,(cols,rows))
+
         #draw_str(vis_frame, (20, 20), 'track count: %d' % len(tracker.tracks))
         if self.draw_trails:
             cv2.polylines(vis_frame, [np.int32(tr) for tr in [[t[:2] for t in tr]  for tr in self.tracks]], False, (0, 255, 0))
