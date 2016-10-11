@@ -45,9 +45,9 @@ class ProcessTracking(Thread):
         self.x_correction = 0
         self.y_correction = 0
         if self.xerror != 0:
-            self.x_correction = self.controllerX.GenOut(self.xerror)
+            self.x_correction = self.controllerX.GenOut(-self.xerror)
         if self.yerror != 0:
-            self.y_correction = self.controllerY.GenOut(self.yerror)
+            self.y_correction = self.controllerY.GenOut(-self.yerror)
         print self.x_correction,self.y_correction #, self.x_correction, self.y_correction
 
 
@@ -117,9 +117,10 @@ class ProcessTracking(Thread):
         
         
         rows,cols = frame.shape[:2]        
-        M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
-        rotated_frame = cv2.warpAffine(frame,M,(cols,rows))
-        self.updateError(rotated_frame)
+        #M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
+        #rotated_frame = cv2.warpAffine(frame,M,(cols,rows))
+        #self.updateError(rotated_frame)
+        self.updateError(frame)
         self.updateCorrection()
         #print self.x_correction, self.y_correction
         if time.time() - self.last_command > 2:
@@ -135,9 +136,9 @@ class ProcessTracking(Thread):
         self.controllerX = pid.PID()
         self.controllerY = pid.PID()
 
-        self.controllerX.SetKp(0.0)
+        self.controllerX.SetKp(25.0)
         self.controllerX.SetKi(0.0)
-        self.controllerY.SetKp(0.0)
+        self.controllerY.SetKp(25.0)
         self.controllerY.SetKi(0.0)
 
         self.x_correction = 0
@@ -182,8 +183,8 @@ class ProcessTracking(Thread):
             self.mutex.release()
 
         rows,cols = vis_frame.shape[:2]        
-        M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
-        vis_frame = cv2.warpAffine(vis_frame,M,(cols,rows))
+        #M = cv2.getRotationMatrix2D((cols/2,rows/2),45,1)
+        #vis_frame = cv2.warpAffine(vis_frame,M,(cols,rows))
 
         #draw_str(vis_frame, (20, 20), 'track count: %d' % len(tracker.tracks))
         if self.draw_trails:
